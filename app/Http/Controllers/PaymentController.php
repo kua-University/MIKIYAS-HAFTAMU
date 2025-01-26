@@ -28,11 +28,11 @@ class PaymentController extends Controller
         $reference = $this->reference;
         
  
-        $validator= Validator::make($request->all(),[
-            'first_name'=>'required|string',
-            'last_name'=>'required|string',
-            'email'=>'required|email',
-            'amount'=>'required|numeric|min:1'
+         $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'email' => 'required|email',
+            'amount' => 'required|numeric|min:1|max:10000' // Updated validation rule
         ]);
 
         if($validator->fails())
@@ -80,27 +80,28 @@ return redirect($payment['data']['checkout_url']);
      * @return void
      */
     public function callback($reference)
-    {
+{
+    $data = Chapa::verifyTransaction($reference);
+
+    // If payment is successful
+    if ($data['status'] == 'success') {
+        $payment = Payment::where('tx_ref', $reference)->first();
+
+        if ($payment) {
+            $payment->update(['status' => 'success']); // Update the status to 'success'
+        } else {
+            \Log::error('Payment record not found for this reference ' . $reference);
+        }
         
-        $data = Chapa::verifyTransaction($reference);
-   
-          //if payment is successful
-        if ($data['status'] ==  'success') {
-        $payment = Payment::where('tx_ref',$reference)->first();
-
-        if($payment){
-            $payment->update(['status'=>'success']);
-        }else{
-            Log::error('Payment record not found for this reference '.$reference);
-        }
-             $message="Payment is Sucessful";
-             return redirect('/')->with('success',$message);
-
-        } else{
-            $message="Payment is not  Sucessful";
-             return redirect('/')->with('error',$message);
-        }
- 
- 
+        $message = "Payment is Sucessful";
+        return redirect('/')->with('success', $message);
+    } else {
+        $message = "Payment is not Sucessful";
+        return redirect('/')->with('error', $message);
     }
+}
+    public function getReference()
+{
+    return $this->reference;
+}
 }
