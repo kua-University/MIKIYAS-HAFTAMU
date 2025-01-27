@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use App\Models\Payment;
+use Chapa\Chapa\Facades\Chapa; // Import the Chapa facade
 use Tests\TestCase;
 
 class CallbackPaymentFailureUTBy_MikeHaf_Test extends TestCase
